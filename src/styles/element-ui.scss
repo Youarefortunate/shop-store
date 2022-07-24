@@ -1,0 +1,86 @@
+// cover some element-ui styles
+
+.el-breadcrumb__inner,
+.el-breadcrumb__inner a {
+  font-weight: 400 !important;
+}
+
+.el-upload {
+  input[type="file"] {
+    display: none !important;
+  }
+}
+
+.el-upload__input {
+  display: none;
+}
+
+
+// to fixed https://github.com/ElemeFE/element/issues/2461
+.el-dialog {
+  transform: none;
+  left: 0;
+  position: relative;
+  margin: 0 auto;
+  .el-dialog__header {
+    border-bottom: 1px solid rgb(234, 234, 234);
+    .el-dialog__title {
+      font-size: 15px;
+    }
+  }
+  .el-dialog__body {
+    padding: 30px 10px;
+    border-bottom: 1px solid rgb(234, 234, 234);
+  }
+}
+
+.el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
+  margin-bottom: 30px;
+}
+
+// refine element ui upload
+.upload-container {
+  .el-upload {
+    width: 100%;
+
+    .el-upload-dragger {
+      width: 100%;
+      height: 200px;
+    }
+  }
+}
+
+// dropdown
+.el-dropdown-menu {
+  a {
+    display: block
+  }
+}
+
+// to fix el-date-picker css style
+.el-range-separator {
+  box-sizing: content-box;
+}
+
+.el-button {
+  height: 35px;
+  line-height: 1px;
+  padding: 10px 20px;
+  border-radius: 2px;
+}
+.el-pagination {
+  float: right;
+  margin: 20px 20px 30px 10px;
+}
+.el-alert {
+  margin-bottom: 20px;
+}
+.el-input-number {
+  width: 100px;
+}
+.el-divider--horizontal {
+  margin: 40px 0;
+}
+.el-divider__text {
+  color: rgba(0, 0, 0, 0.45);
+}
