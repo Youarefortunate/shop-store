@@ -3,7 +3,7 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">商城后台管理系统</h3>
+        <h3 class="title">萤火商城后台管理系统</h3>
       </div>
 
       <el-form-item prop="username">
@@ -53,13 +53,10 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-
 export default {
   name: 'Login',
   data() {
     const validateUsername = (rule, value, callback) => {
-      console.log(value);
       if (value.length == 0) {
         callback(new Error('请输入用户名'))
       } else {
@@ -114,7 +111,8 @@ export default {
             this.$notify.success({
               title: '提示',
               message: '登录成功',
-              duration: 1500
+              duration: 1500,
+              showClose: false
             })
             this.$router.push({ path: this.redirect || '/' })
             this.loading = false

@@ -6,6 +6,7 @@ import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
+import { isEmpty } from '@/utils/util'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
@@ -18,7 +19,7 @@ router.beforeEach(async (to, from, next) => {
   // set page title
   document.title = getPageTitle(to.meta.title)
 
-  // determine whether the user has logged in
+  // 判断用户是否已登录
   const hasToken = getToken()
   const localToken = localStorage.getItem('token')
   if (hasToken && localToken) {
@@ -27,24 +28,40 @@ router.beforeEach(async (to, from, next) => {
       next({ path: '/' })
       NProgress.done()
     } else {
-      const hasGetUserInfo = store.getters.name
-      if (hasGetUserInfo) {
-        next()
+      const hasRoles = store.getters.roles
+      if (isEmpty(hasRoles)) {
+        // 获取用户信息
+        store.dispatch('user/getInfo')
+          .then(data => {
+            const roles = data.roles
+            // 根据roles权限生成可访问的路由表
+            store.dispatch('GenerateRoutes', { roles })
+              .then(routers => {
+                // 手动导入添加动态路由规则
+                router.options.routes = routers[0].children
+                // 动态添加可访问路由表
+                router.addRoutes(routers)
+                // 请求中带有redirect重定向时，登录自动重定向到改地址
+                const redirect = decodeURIComponent(from.query.redirect || to.path)
+                if (to.path === redirect) {
+                  next({ ...to, replace: true })
+                } else {
+                  // 跳转到目的路由
+                  next({ path: redirect })
+                }
+              })
+              .catch(async (error) => {
+                await store.dispatch('user/resetToken')
+                Message.error('请求用户信息失败,请重试')
+                // 获取用户信息失败时，调出登录，清空历史保留记录
+                store.dispatch('user/logout').then(() => {
+                  next(`/login?redirect=${to.path}`)
+                  NProgress.done()
+                })
+              })
+          })
       } else {
-        try {
-          // get user info
-          await store.dispatch('user/getInfo')
-            .then(data => {
-              console.log(data);
-            })
-          next()
-        } catch (error) {
-          // remove token and go to login page to re-login
-          await store.dispatch('user/resetToken')
-          Message.error(error || 'Has Error')
-          next(`/login?redirect=${to.path}`)
-          NProgress.done()
-        }
+        next()
       }
     }
   } else {

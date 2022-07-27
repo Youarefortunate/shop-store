@@ -7,7 +7,9 @@ const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
-    avatar: ''
+    avatar: '',
+    roles: {},
+    userInfo: {}
   }
 }
 
@@ -25,6 +27,12 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_INFO(state, userInfo) {
+    state.userInfo = userInfo
+  },
+  SET_ROLES(state, roles) {
+    state.roles = roles
   }
 }
 
@@ -34,10 +42,10 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
-        const { data: data } = response;
-        commit('SET_TOKEN', data.data.token)
-        setToken(data.data.token)
-        localStorage.setItem('token', data.data.token); // 保存用户token
+        const { data: result } = response;
+        commit('SET_TOKEN', result.data.token)
+        setToken(result.data.token)
+        localStorage.setItem('token', result.data.token); // 保存用户token
         resolve()
       }).catch(error => {
         reject(error)
@@ -46,38 +54,42 @@ const actions = {
   },
 
   // 获取用户信息
-  getInfo({ commit, state }) {
-    const admin = 'admin'
-    const avatar = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
-    commit('SET_NAME', admin)
-    commit('SET_AVATAR', avatar)
-    // return new Promise((resolve, reject) => {
-    //   getInfo().then(response => {
-    //     const data = response
-    //     const roles = data.roles
-    //     // 遍历整理 actionList
-    //     roles.permissions.map(item => {
-    //       item.actionList = [];
-    //       if (item.actionEntitySet && item.actionEntitySet.length > 0) {
-    //         item.actionList = item.actionEntitySet.map(action => action.action)
-    //       }
-    //     })
-    //     roles.permissionList = roles.permissions.map(item => item.permissionId)
-    //     console.log(response);
-    //     resolve(data)
-    //   }).catch(error => {
-    //     reject(error)
-    //   })
-    // })
+  getInfo({ commit }) {
+    return new Promise((resolve, reject) => {
+      getInfo().then(response => {
+        const avatar = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
+        const data = response.data.data
+        const roles = data.roles
+        // 遍历整理 actionList
+        roles.permissions.map(item => {
+          item.actionList = [];
+          if (item.actionEntitySet && item.actionEntitySet.length > 0) {
+            item.actionList = item.actionEntitySet.map(action => action.action)
+          }
+        })
+        roles.permissionList = roles.permissions.map(item => item.permissionId)
+        commit('SET_ROLES', roles)
+        commit('SET_INFO', data.userInfo)
+        commit('SET_NAME', data.userInfo.real_name)
+        commit('SET_AVATAR', avatar)
+        resolve(data)
+      }).catch(error => {
+        reject(error)
+      })
+    })
   },
 
-  // user logout
+  // 退出登录
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
       logout().then(() => {
         removeToken() // must remove  token  first
         resetRouter()
+        // 重置state状态
         commit('RESET_STATE')
+        // 清空用户信息
+        commit('SET_ROLES', [])
+        localStorage.removeItem('token')
         resolve()
       }).catch(error => {
         reject(error)

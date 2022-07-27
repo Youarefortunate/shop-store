@@ -5,7 +5,7 @@
         placeholder="请选择省市区"
         v-model="sValue"
         :options="options" 
-        @change="onChange"></el-cascader>
+        @change="onChange"/>
   </div>
 </template>
 
