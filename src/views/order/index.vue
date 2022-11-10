@@ -84,25 +84,24 @@
         </el-row>
       </div>
       <!-- 列表内容 -->
-      <el-table 
+      <el-table
         v-loading="loading"
         style="width: 100%"
         empty-text="数据都跑空啦~"
         :data="orderList.data"
         :header-cell-style="getRowClass"
-        
       >
-        <el-table-column 
+        <el-table-column
           v-for="(item, index) in columns"
           :key="index"
           :label="item.label"
           :prop="item.prop"
           :width="item.width"
         >
-        <template>
-          <!-- 商品信息 -->
-          <span v-if="item.text == 'goods'"></span>
-        </template>
+          <template>
+            <!-- 商品信息 -->
+            <span v-if="item.text == 'goods'"></span>
+          </template>
         </el-table-column>
       </el-table>
     </el-card>
@@ -137,37 +136,37 @@ const columns = [
   {
     label: "商品信息",
     text: "goods",
-    width: '185'
+    width: "185",
   },
   {
     label: "单价/数量",
-    text: 'unit_price',
-    width: '185'
+    text: "unit_price",
+    width: "185",
   },
   {
     label: "实付款",
     text: "pay_price",
-    width: '185'
+    width: "185",
   },
   {
     label: "买家",
     text: "user",
-    width: '185'
+    width: "185",
   },
   {
     label: "支付方式",
     text: "pay_type",
-    width: '185'
+    width: "185",
   },
   {
     label: "配送方式",
     text: "delivery_type",
-    width: '185'
+    width: "185",
   },
   {
     label: "交易状态",
     text: "status",
-    width: '185'
+    width: "185",
   },
   {
     label: "操作",
@@ -175,6 +174,23 @@ const columns = [
   },
 ];
 
+const searchSelectItem = [
+  {
+    label: "订单来源: ",
+    model: "orderSource",
+    EnumData: OrderSourceEnum,
+  },
+  {
+    label: "支付方式: ",
+    model: "payType",
+    EnumData: PayTypeEnum,
+  },
+  {
+    label: "配送方式: ",
+    model: "deliveryType",
+    EnumData: DeliveryTypeEnum,
+  },
+];
 export default {
   name: "Order",
   components: {
@@ -183,23 +199,6 @@ export default {
     UserItem,
   },
   data() {
-    const searchSelectItem = [
-      {
-        label: "订单来源: ",
-        model: "orderSource",
-        EnumData: OrderSourceEnum,
-      },
-      {
-        label: "支付方式: ",
-        model: "payType",
-        EnumData: PayTypeEnum,
-      },
-      {
-        label: "配送方式: ",
-        model: "deliveryType",
-        EnumData: DeliveryTypeEnum,
-      },
-    ];
     return {
       // 订单类型
       dataType: this.getDataType(),

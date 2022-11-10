@@ -90,7 +90,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55"/>
-        <el-table-column 
+        <el-table-column
           v-for="(item, index) in columns"
           :key="index"
           :label="item.label"

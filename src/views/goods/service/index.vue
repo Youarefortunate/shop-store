@@ -23,53 +23,48 @@
           </el-col>
         </el-row>
       </div>
-      <el-table
-        :data="tableData"
-        style="width: 100%"
-        v-loading="loading"
-        :header-cell-style="getRowClass"
+
+      <my-table
+        :loading="loading"
+        :total="total"
+        :currentPage="currentPage"
+        :tableData="tableData"
+        :columns="columns"
+        @handleCurrentChange="handleCurrentChange"
       >
-        <el-table-column
-          v-for="(item, index) in columns"
-          :key="index"
-          :label="item.label"
-          :prop="item.prop"
-          :width="item.width"
-        >
-          <template slot-scope="scope">
-            <!-- 是否默认 -->
-            <span v-if="item.text == 'is_default'">
-              <el-tag :type="scope.row.is_default == 1 ? 'success' : 'info'">{{
-                scope.row.is_default == 1 ? "是" : "否"
-              }}</el-tag>
-            </span>
-            <!-- 状态 -->
-            <span v-if="item.text == 'status'">
-              <el-tag :type="scope.row.status == 1 ? 'success' : 'info'">{{
-                scope.row.status == 1 ? "显示" : "隐藏"
-              }}</el-tag>
-            </span>
-            <!-- 操作 -->
-            <span v-if="item.text == 'action'">
-              <el-link
-                type="primary"
-                style="margin-right: 8px"
-                @click="handleEdit(scope.row)"
-                :underline="false"
-                >编辑</el-link
-              >
-              <el-link
-                type="primary"
-                @click="handleDelete(scope.row)"
-                :underline="false"
-                >删除</el-link
-              >
-            </span>
-            <!-- 显示其他未满足条件的项 -->
-            <span>{{ scope.row[item.prop] }}</span>
-          </template>
-        </el-table-column>
-      </el-table>
+        <template slot="content" slot-scope="{ data, item }">
+          <!-- 是否默认 -->
+          <span v-if="item.text == 'is_default'">
+            <el-tag :type="data.is_default == 1 ? 'success' : 'info'">{{
+              data.is_default == 1 ? "是" : "否"
+            }}</el-tag>
+          </span>
+          <!-- 状态 -->
+          <span v-if="item.text == 'status'">
+            <el-tag :type="data.status == 1 ? 'success' : 'info'">{{
+              data.status == 1 ? "显示" : "隐藏"
+            }}</el-tag>
+          </span>
+          <!-- 操作 -->
+          <span v-if="item.text == 'action'">
+            <el-link
+              type="primary"
+              style="margin-right: 8px"
+              @click="handleEdit(data)"
+              :underline="false"
+              >编辑</el-link
+            >
+            <el-link
+              type="primary"
+              @click="handleDelete(data)"
+              :underline="false"
+              >删除</el-link
+            >
+          </span>
+          <!-- 显示其他未满足条件的项 -->
+          <span>{{ data[item.prop] }}</span>
+        </template>
+      </my-table>
       <AddForm ref="AddForm" @handleSubmit="handleRefresh" />
       <EditForm ref="EditForm" @handleSubmit="handleRefresh" />
     </el-card>
@@ -81,46 +76,49 @@ import * as Api from "@/api/goods/service";
 import AddForm from "./modules/AddForm";
 import EditForm from "./modules/EditForm";
 
+import MyTable from "@/components/MyTable";
+
+const columns = [
+  {
+    label: "服务名称",
+    prop: "name",
+    width: "200px",
+  },
+  {
+    label: "概述",
+    prop: "summary",
+    width: "400px",
+  },
+  {
+    label: "是否默认",
+    text: "is_default",
+    width: "150px",
+  },
+  {
+    label: "状态",
+    text: "status",
+    width: "150px",
+  },
+  {
+    label: "排序",
+    prop: "sort",
+    width: "150px",
+  },
+  {
+    label: "更新时间",
+    prop: "update_time",
+    width: "250px",
+  },
+  {
+    label: "操作",
+    text: "action",
+  },
+];
+
 export default {
   name: "Index",
-  components: { AddForm, EditForm },
+  components: { AddForm, EditForm, MyTable },
   data() {
-    const columns = [
-      {
-        label: "服务名称",
-        prop: "name",
-        width: "200px",
-      },
-      {
-        label: "概述",
-        prop: "summary",
-        width: "400px",
-      },
-      {
-        label: "是否默认",
-        text: "is_default",
-        width: "150px",
-      },
-      {
-        label: "状态",
-        text: "status",
-        width: "150px",
-      },
-      {
-        label: "排序",
-        prop: "sort",
-        width: "150px",
-      },
-      {
-        label: "更新时间",
-        prop: "update_time",
-        width: "250px",
-      },
-      {
-        label: "操作",
-        text: "action",
-      },
-    ];
     return {
       // 表格数据
       tableData: [],
@@ -128,7 +126,12 @@ export default {
       queryParam: {},
       // 表头数据
       columns,
+      // 加载
       loading: false,
+      // 总条数
+      total: 0,
+      // 当前页码
+      currentPage: 1,
     };
   },
   mounted() {
@@ -137,8 +140,12 @@ export default {
   methods: {
     // 获取初始化table数据
     async loadData() {
-      const { data: result } = await Api.list({ page: 1, ...this.queryParam });
-      this.tableData = result.data.list.data;
+      const page = this.currentPage;
+      const {
+        data: { data: result },
+      } = await Api.list({ page, ...this.queryParam });
+      this.total = result.list.total;
+      this.tableData = result.list.data;
     },
     // 新增
     handleAdd() {
@@ -173,17 +180,16 @@ export default {
     onSearch() {
       this.handleRefresh();
     },
+    // 页码发生改变回调
+    handleCurrentChange(newPage) {
+      this.currentPage = newPage;
+      this.handleRefresh();
+    },
     // 刷新table
     handleRefresh() {
       this.loading = true;
       this.loadData();
       this.loading = false;
-    },
-    // 表头样式
-    getRowClass({ rowIndex }) {
-      if (rowIndex == 0) {
-        return "background: rgb(250,250,250); font-weight: normal; color: black";
-      }
     },
   },
 };

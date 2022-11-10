@@ -60,6 +60,7 @@ const actions = {
         const avatar = 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
         const data = response.data.data
         const roles = data.roles
+        console.log(roles);
         // 遍历整理 actionList
         roles.permissions.map(item => {
           item.actionList = [];

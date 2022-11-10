@@ -24,7 +24,7 @@ router.beforeEach(async (to, from, next) => {
   const localToken = localStorage.getItem('token')
   if (hasToken && localToken) {
     if (to.path === '/login') {
-      // if is logged in, redirect to the home page
+      // 如果已经登录,跳转首页
       next({ path: '/' })
       NProgress.done()
     } else {
@@ -65,7 +65,7 @@ router.beforeEach(async (to, from, next) => {
       }
     }
   } else {
-    /* 没有token*/
+    /* 没有token时判断去往的页面路径存在于白名单中 */
     // indexOf()方法找不到时返回-1,当路径不存在白名单中
     if (whiteList.indexOf(to.path) !== -1) {
       // in the free login whitelist, go directly
@@ -79,6 +79,6 @@ router.beforeEach(async (to, from, next) => {
 })
 
 router.afterEach(() => {
-  // finish progress bar
+  // 完成跳转
   NProgress.done()
 })

@@ -61,169 +61,157 @@
           </div>
         </div>
       </div>
-      <!-- table表格 -->
-      <el-table
-        empty-text="数据都跑空啦~"
-        v-loading="loading"
-        :data="tableData"
-        style="width: 100%"
-        row-key="comment_id"
-        :header-cell-style="getRowClass"
-        :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+      <my-table
+        rowKey="comment_id"
+        :loading="loading"
+        :total="total"
+        :tableData="tableData"
+        :columns="columns"
+        :currentPage="currentPage"
+        @handleCurrentChange="handleCurrentChange"
       >
-        <el-table-column
-          v-for="(item, index) in columns"
-          :key="index"
-          :label="item.label"
-          :prop="item.prop"
-          :width="item.width"
-        >
-          <template slot-scope="scope">
-            <!-- 商品信息 -->
-            <span v-if="item.text == 'orderGoods'">
-              <goods-item
-                :data="{
-                  image: scope.row.goods_image,
-                  imageAlt: '商品图片',
-                  title: scope.row.goods_name,
-                  goodsProps: scope.row.goods_props,
-                }"
-              />
-            </span>
-            <!-- 买家 -->
-            <span v-if="item.text == 'user'">
-              <p>{{ scope.row.nick_name }}</p>
-              <p>
-                <span style="font-size: 12px; color: #7b7b7b">(ID: 11649)</span>
-              </p>
-            </span>
-            <!-- 评分 -->
-            <span v-if="item.text == 'score'">
-              <el-tag
-                :type="
-                  { 10: 'success', 20: 'info', 30: 'error' }[scope.row.score]
-                "
-                >{{
-                  { 10: "好评", 20: "中评", 30: "差评" }[scope.row.score]
-                }}</el-tag
-              >
-            </span>
-            <!-- 评价内容 -->
-            <span v-if="item.text == 'content'">
-              <p class="twoline-hide" style="width: 270px">
-                {{ scope.row.content }}
-              </p>
-            </span>
-            <!-- 图片评价 -->
-            <span v-if="item.text == 'is_picture'">
-              <el-tag :type="scope.row.is_picture ? 'success' : 'info'">{{
-                scope.row.is_picture ? "显示" : "隐藏"
-              }}</el-tag>
-            </span>
-            <!-- 状态 -->
-            <span v-if="item.text == 'status'">
-              <el-tag :type="scope.row.status ? 'success' : 'info'">{{
-                scope.row.status ? "显示" : "隐藏"
-              }}</el-tag>
-            </span>
-            <!-- 操作项 -->
-            <span v-if="item.text == 'action'">
-              <el-link
-                type="primary"
-                style="margin-right: 8px"
-                @click="handleEdit(scope.row)"
-                :underline="false"
-                >编辑</el-link
-              >
-              <el-link
-                type="primary"
-                @click="handleDelete(scope.row)"
-                :underline="false"
-                >删除</el-link
-              >
-            </span>
-            <span>{{ scope.row[item] }}</span>
-          </template>
-        </el-table-column>
-      </el-table>
+        <!-- data就是scope.row， item就是columns对象 -->
+        <template slot="content" slot-scope="{ data, item }">
+          <span v-if="item.text == 'orderGoods'">
+            <goods-item
+              :data="{
+                image: data.orderGoods.goods_image,
+                imageAlt: '商品图片',
+                title: data.orderGoods.goods_name,
+                goodsProps: data.orderGoods.goods_props,
+              }"
+            />
+          </span>
+          <!-- 买家 -->
+          <span v-if="item.text == 'user'">
+            <p>{{ data.user.nick_name }}</p>
+            <p>
+              <span style="font-size: 12px; color: #7b7b7b">(ID: 11649)</span>
+            </p>
+          </span>
+          <!-- 评分 -->
+          <span v-if="item.text == 'score'">
+            <el-tag
+              size="small"
+              :type="
+                { 10: 'success', 20: 'info', 30: 'danger' }[data.score]
+              "
+              >{{
+                { 10: "好评", 20: "中评", 30: "差评" }[data.score]
+              }}</el-tag
+            >
+          </span>
+          <!-- 评价内容 -->
+          <span v-if="item.text == 'content'">
+            <p class="twoline-hide" style="width: 270px">
+              {{ data.content }}
+            </p>
+          </span>
+          <!-- 图片评价 -->
+          <span v-if="item.text == 'is_picture'">
+            <el-tag
+              size="small"
+              :type="data.is_picture ? 'success' : 'info'"
+              >{{ data.is_picture ? "显示" : "隐藏" }}</el-tag
+            >
+          </span>
+          <!-- 状态 -->
+          <span v-if="item.text == 'status'">
+            <el-tag
+              size="small"
+              :type="data.status ? 'success' : 'info'"
+              >{{ data.status ? "显示" : "隐藏" }}</el-tag
+            >
+          </span>
+          <!-- 操作项 -->
+          <span v-if="item.text == 'action'">
+            <el-link
+              type="primary"
+              style="margin-right: 8px"
+              @click="handleEdit(data)"
+              :underline="false"
+              >编辑</el-link
+            >
+            <el-link
+              type="primary"
+              @click="handleDelete(data)"
+              :underline="false"
+              >删除</el-link
+            >
+          </span>
+          <span v-else>{{ data[item.prop] }}</span>
+        </template>
+      </my-table>
       <EditForm ref="EditForm" @handleSubmit="handleRefresh" />
     </el-card>
   </div>
 </template>
 
 <script>
+import MyTable from "@/components/MyTable";
 import * as CommentApi from "@/api/goods/comment";
 import GoodsItem from "@/components/GoodsItem";
-import EditForm from './modules/EditForm'
+import EditForm from "./modules/EditForm";
 
+const columns = [
+  {
+    label: "ID",
+    prop: "comment_id",
+    width: "100px",
+  },
+  {
+    label: "商品信息",
+    width: "250px",
+    text: "orderGoods",
+  },
+  {
+    label: "买家",
+    width: "150px",
+    text: "user",
+  },
+  {
+    label: "评分",
+    width: "100px",
+    text: "score",
+  },
+  {
+    label: "评论内容",
+    width: "200px",
+    text: "content",
+  },
+  {
+    label: "图片评价",
+    width: "100px",
+    text: "is_picture",
+  },
+  {
+    label: "状态",
+    width: "100px",
+    text: "status",
+  },
+  {
+    label: "排序",
+    prop: "sort",
+    width: "100px",
+  },
+  {
+    label: "评价时间",
+    prop: "create_time",
+    width: "200px",
+  },
+  {
+    label: "操作",
+    text: "action",
+  },
+];
 export default {
   name: "Index",
-  components: { GoodsItem, EditForm },
+  components: { MyTable, GoodsItem, EditForm },
   data() {
-    const columns = [
-      {
-        label: 'ID',
-        prop: 'comment_id',
-        width: '100px',
-        text: 'comment_id'
-      },
-      {
-        label: '商品信息',
-        prop: 'orderGoods',
-        width: '150px',
-        text: 'orderGoods'
-      },
-      {
-        label: '买家',
-        prop: 'user',
-        width: '150px',
-        text: 'user'
-      },
-      {
-        label: '评分',
-        prop: 'score',
-        width: '100px',
-        text: 'score'
-      },
-      {
-        label: '评论内容',
-        prop: 'content',
-        width: '200px',
-        text: 'content'
-      },
-      {
-        label: '图片评价',
-        prop: 'is_picture',
-        width: '200px',
-        text: 'is_picture'
-      },
-      {
-        label: '状态',
-        prop: 'status',
-        width: '100px',
-        text: 'status'
-      },
-      {
-        label: '排序',
-        prop: 'sort',
-        width: '100px',
-        text: 'sort'
-      },
-      {
-        label: '评价时间',
-        prop: 'create_time',
-        width: '200px',
-        text: 'comment_id'
-      },
-      {
-        label: '操作',
-        prop: 'action',
-        text: 'action'
-      },
-    ]
     return {
       // 搜索输入框表单
       searchForm: {
+        // 商品名称
         goodsName: "",
         // 订单号
         orderNo: "",
@@ -233,71 +221,86 @@ export default {
       },
       // 查询参数
       queryParam: {
-        score: 0
+        // score: 积分
+        score: 0,
       },
       // 表格数据
       tableData: [],
+      // 加载
+      loading: false,
+      // 表头
+      columns,
+      // 当前页码
+      currentPage: 1,
+      // 总条数
+      total: 0,
       // 评价分类列表
       categoryListTree: [],
-      loading: false,
-      columns,
     };
   },
   mounted() {
-    this.loadData()
+    this.loadData();
   },
   methods: {
     // 加载数据
     async loadData() {
       this.loading = true;
-      const { data: result }= await CommentApi.list({ page: 1, ...this.queryParam })
+      const page = this.currentPage;
+      const { data: { data } } = await CommentApi.list({
+        page,
+        ...this.queryParam,
+      });
       this.loading = false;
-      this.tableData = result.data.list.data;
+      // 记录总条数
+      this.total = data.list.total;
+      this.tableData = data.list.data;
     },
     // 回车或者输入框失去焦点触发事件
     handleSearch() {
-      this.queryParam = { ...this.queryParam, ...this.searchForm }
-      this.handleRefresh(true)
+      this.queryParam = { ...this.queryParam, ...this.searchForm };
+      this.handleRefresh();
     },
     // 操作模板tabs按钮发生改变,回调参数是点击的tabs绑定的值
     handleTabs(value) {
       this.queryParam.score = value;
-      this.handleRefresh(true)
+      this.handleRefresh();
     },
     // 编辑评论
     handleEdit(record) {
-      this.$refs.EditForm.edit(record.comment_id)
+      this.$refs.EditForm.edit(record.comment_id);
     },
     // 删除评论
     handleDelete(record) {
-      this.$confirm('你确定要删除该记录嘛, 删除后不可恢复', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
-        const { data } = await CommentApi.deleted({ commentId: record.comment_id })
-        this.$notify({
-          type: data.status == 200 ? 'success' : 'error',
-          title: '删除商品评论',
-          message: data.message,
-          showClose: true,
-          duration: 1000
+      this.$confirm("你确定要删除该记录嘛, 删除后不可恢复", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(async () => {
+          const { data } = await CommentApi.deleted({
+            commentId: record.comment_id,
+          });
+          this.$notify({
+            type: data.status == 200 ? "success" : "error",
+            title: "删除商品评论",
+            message: data.message,
+            showClose: true,
+            duration: 1000,
+          });
+          this.handleRefresh();
         })
-        this.handleRefresh()
-      }).catch(() => {})
+        .catch(() => {});
     },
     /**
      * 刷新列表
-     * @param Boolean bool 强制刷新到第一页
      */
-    handleRefresh (bool = false) {
+    handleRefresh() {
       this.loadData();
     },
-    // 表头样式
-    getRowClass({ rowIndex }) {
-      if (rowIndex == 0) {
-        return "background: rgb(250,250,250); font-weight: 500; color: black";
-      }
+    // 页码发生改变
+    handleCurrentChange(newPage) {
+      this.currentPage = newPage;
+      this.handleRefresh();
     },
   },
 };
@@ -312,7 +315,7 @@ export default {
   }
   .table-operator {
     .row-item-tab {
-      .tab-list { 
+      .tab-list {
         .el-radio-group {
           margin-bottom: 20px;
         }

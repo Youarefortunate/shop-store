@@ -82,6 +82,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <!-- 分页器 -->
+      <el-pagination
+        v-if="total > perPage"
+        layout="prev, pager, next"
+        background
+        :total="total"
+        :page-size="perPage"
+        :current-page="page"
+        @current-change="handleCurrentChange"
+      />
     </el-card>
   </div>
 </template>
@@ -122,6 +132,14 @@ export default {
     ];
     return {
       tableData: [],
+      // 表头
+      columns,
+      // 一页显示多少条数据
+      perPage: 15,
+      // 当前
+      total: 0,
+      // 当前表格页码数
+      page: 1,
       columns,
       // 查询参数
       queryParam: { name: "" },
@@ -134,8 +152,12 @@ export default {
   },
   methods: {
     async loadData() {
-      const { data } = await Api.list({ page: 1, ...this.queryParam });
-      this.tableData = data.data.list.data;
+      const page = this.page;
+      const { data: result } = await Api.list({ page, ...this.queryParam });
+      this.tableData = result.data.list.data;
+      // 记录总条数
+      this.total = result.data.list.total
+      this.tableData = result.data.list.data
     },
     // 新增页面
     handleAdd() {},
@@ -184,6 +206,17 @@ export default {
     // 回车搜索
     onSearch() {
       this.loadData();
+    },
+    // 页码发生改变
+    handleCurrentChange(newPage) {
+      this.page = newPage;
+      this.handleRefresh();
+    },
+    // 刷新table
+    async handleRefresh() {
+      this.loading = true;
+      await this.loadData();
+      this.loading = false;
     },
     // 表头样式
     getRowClass({ rowIndex }) {

@@ -32,7 +32,6 @@
 
         <el-form-item>
           <el-button type="primary" @click="onSubmit('form')">提交</el-button>
-          <el-button @click="resetForm('form')">重置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -106,10 +105,6 @@ export default {
           this.loading = false;
         }
       });
-    },
-    // 重置表单校验
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
     },
   },
 };

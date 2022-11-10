@@ -1,7 +1,6 @@
 <template>
   <div class="login-container">
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-
       <div class="title-container">
         <h3 class="title">萤火商城后台管理系统</h3>
       </div>
@@ -47,7 +46,6 @@
         <span style="margin-right:20px;">username: any</span>
         <span>password: any</span>
       </div>
-
     </el-form>
   </div>
 </template>
@@ -133,6 +131,7 @@ export default {
 /* 修复input 背景不协调 和光标变色 */
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
+// scss定义变量的方式  $变量名
 $bg:#283443;
 $light_gray:#fff;
 $cursor: #fff;

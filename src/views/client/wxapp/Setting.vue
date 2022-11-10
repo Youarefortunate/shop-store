@@ -29,7 +29,6 @@
         <el-form-item
           label="小程序 AppSecret: "
           prop="app_secret"
-          type="password"
           size="small"
           :rules="[
             {
@@ -40,6 +39,7 @@
           ]"
         >
           <el-input
+            type="password"
             v-model="form.app_secret"
             style="width: 550px"
             placeholder="请输入小程序AppSecret"
@@ -69,13 +69,14 @@
         <el-form-item
           label="小程序支付密钥 APIKEY: "
           prop="apikey"
-          type="password"
           size="small"
           :rules="[
             { required: true, message: '请输入微信支付密钥', trigger: 'blur' },
           ]"
         >
           <el-input
+            type="password"
+            autocomplete="no"
             v-model="form.apikey"
             style="width: 550px"
             placeholder="请输入微信支付密钥"

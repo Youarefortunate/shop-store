@@ -408,6 +408,44 @@ import GoodsModel from "@/common/model/goods/Index";
 import MultiSpec from "./modules/MultiSpec";
 import { isEmptyObject } from "@/utils/util";
 
+const specTypeContent = [
+  {
+    label: "商品价格",
+    prop: "goods_price",
+    min: 0.01,
+    precision: 2,
+    model: "goods_price",
+    text: "元",
+    extra: "商品的实际购买金额, 最低0.01",
+  },
+  {
+    label: "划线价",
+    prop: "line_price",
+    min: 0,
+    precision: 2,
+    model: "line_price",
+    text: "元",
+    extra: "划线价仅用于商品页展示",
+  },
+  {
+    label: "当前库存量",
+    prop: "stock_num",
+    min: 0,
+    precision: 0,
+    model: "stock_num",
+    text: "件",
+    extra: "商品的实际库存数量, 为0时用户无法下单",
+  },
+  {
+    label: "商品重量",
+    prop: "goods_weight",
+    min: 0,
+    model: "goods_weight",
+    text: "千克 (Kg)",
+    extra: "商品的实际重量, 用于计算运费",
+  },
+];
+
 export default {
   components: {
     MultiSpec,
@@ -417,43 +455,6 @@ export default {
     SelectVideo,
   },
   data() {
-    const specTypeContent = [
-      {
-        label: "商品价格",
-        prop: "goods_price",
-        min: 0.01,
-        precision: 2,
-        model: "goods_price",
-        text: "元",
-        extra: "商品的实际购买金额, 最低0.01",
-      },
-      {
-        label: "划线价",
-        prop: "line_price",
-        min: 0,
-        precision: 2,
-        model: "line_price",
-        text: "元",
-        extra: "划线价仅用于商品页展示",
-      },
-      {
-        label: "当前库存量",
-        prop: "stock_num",
-        min: 0,
-        precision: 0,
-        model: "stock_num",
-        text: "件",
-        extra: "商品的实际库存数量, 为0时用户无法下单",
-      },
-      {
-        label: "商品重量",
-        prop: "goods_weight",
-        min: 0,
-        model: "goods_weight",
-        text: "千克 (Kg)",
-        extra: "商品的实际重量, 用于计算运费",
-      },
-    ];
     return {
       // 默认的标签索引
       tabKey: "0",
@@ -590,7 +591,10 @@ export default {
     async onFormSubmit(values) {
       this.loading = true;
       this.isBtnLoading = true;
-      const { data } = await GoodsApi.edit({ goodsId: this.goodsId, form: values });
+      const { data } = await GoodsApi.edit({
+        goodsId: this.goodsId,
+        form: values,
+      });
       this.$notify({
         type: data.status == 200 ? "success" : "error",
         title: "编辑商品",
@@ -615,6 +619,7 @@ export default {
         ["content"],
         ["alone_grade_equity", "first_money", "second_money", "third_money"],
       ];
+      // shift()方法移除数组第一个元素,与其相反的是 pop()方法删除数组最后一个元素
       const filed = Object.keys(errors).shift();
       for (const key in tabFieldsMap) {
         if (tabFieldsMap[key].indexOf(filed) > -1) {

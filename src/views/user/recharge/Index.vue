@@ -51,7 +51,7 @@
       <el-table 
         v-loading="loading"
         style="width: 100%"
-        height="150"
+        height="250"
         empty-text="数据都跑空啦~"
         :data="tableData"
         :header-cell-style="getRowClass"

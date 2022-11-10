@@ -35,7 +35,7 @@
               size="small"
               :rules="[{ required: true, message: '请至少选择一个商品分类', trigger: 'blur' }]"
             >
-              <tree-select
+              <tree-select 
                 style="width: 420px"
                 v-model="form.categorys"
                 :selectValue="form.categorys"

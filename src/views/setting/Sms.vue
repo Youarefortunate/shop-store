@@ -95,22 +95,25 @@
         </div>
 
         <!-- 短信场景配置 -->
-        <div v-for="(item, index) in record['scene']" :key="index">
+        <!-- 遍历对象，key是对象中的每一个属性名 -->
+        <div v-for="(item, key) in record['scene']" :key="key">
           <el-divider content-position="left">{{ item.name }}</el-divider>
           <el-form-item label="是否开启: " size="small" required>
-            <el-radio-group v-model="form.scene[index].isEnable">
+            <el-radio-group v-model="record.scene[key].isEnable" @change="sceneChange(record.scene[key].isEnable, key)">
               <el-radio :label="true">开启</el-radio>
               <el-radio :label="false">关闭</el-radio>
             </el-radio-group>
           </el-form-item>
 
           <el-form-item label="模板内容: " size="small" required>
-            <span style="color: rgba(0, 0, 0, 0.45);">{{ record.scene[index].contentPractical }}</span>
+            <span style="color: rgba(0, 0, 0, 0.45)">{{
+              record.scene[key].contentPractical
+            }}</span>
           </el-form-item>
 
           <el-form-item label="模板ID/Code: " size="small" required>
             <el-input
-              v-model="form.scene[index].templateCode"
+              v-model="record.scene[key].templateCode"
               style="width: 420px"
             />
             <div class="form-item-help">
@@ -119,19 +122,20 @@
           </el-form-item>
 
           <el-form-item
-            v-if="record.scene[index].acceptPhone !== undefined"
+            v-if="record.scene[key].acceptPhone !== undefined"
             label="接收手机号: "
             size="small"
             required
           >
             <el-input
-              v-model="form.scene[index].acceptPhone"
+              v-model="form.scene[key].acceptPhone"
               style="width: 420px"
             />
             <div class="form-item-help">
               <p class="extra">
                 注：如需写多个手机号，请使用英文逗号
-                <el-tag type="info" size="small" style="margin: 0 5px">,</el-tag>隔开
+                <el-tag type="info" size="small" style="margin: 0 5px">,</el-tag
+                >隔开
               </p>
             </div>
           </el-form-item>
@@ -154,6 +158,7 @@ import SettingSmsSceneEnum from "@/common/enum/setting/sms/Scene";
 export default {
   data() {
     return {
+      aa: true,
       // 表单数据
       form: {
         // 默认的短信平台
@@ -215,6 +220,10 @@ export default {
         );
       }
     },
+    // 同步form表单中的数据
+    sceneChange(newScene, key) {
+      this.form.scene[key].isEnable = newScene;
+    },
     // 解析短信内容变量，生成完整的模板内容
     onVsprintf(str, variables) {
       const reg = new RegExp("%s");
@@ -231,7 +240,6 @@ export default {
         $nextTick(() => {
           const scene = {};
           for (const index in record.scene) {
-            console.log(index);
             const item = record.scene[index];
             const contentPractical = that.onVsprintf(
               item.content,
@@ -252,6 +260,7 @@ export default {
           this.form.engine = engine;
           this.form.scene = scene;
         });
+        this.form.scene = record.scene;
     },
     // 提交表单
     handleSubmit() {
@@ -272,6 +281,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-</style>

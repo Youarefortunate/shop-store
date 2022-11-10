@@ -28,7 +28,6 @@ export const asyncRouterMap = [
         name: 'manage',
         component: RouteView,
         redirect: '/manage/user/index',
-        // redirect: 'noRedirect',
         meta: { title: '管理员', icon: 'el-icon-s-custom', permission: ['/manage'] },
         children: [
           {
@@ -48,7 +47,6 @@ export const asyncRouterMap = [
         path: '/store',
         name: 'store',
         component: RouteView,
-        // redirect: 'noRedirect',
         redirect: '/store/setting',
         meta: { title: '店铺管理', icon: 'el-icon-s-shop', permission: ['/store'] },
         children: [
@@ -534,7 +532,7 @@ export const asyncRouterMap = [
       },
     ]
   },
-  
+
   // 更新账户信息
   {
     name: 'renew',
